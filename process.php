@@ -31,22 +31,50 @@ function request_callback($response, $info, $request) {
 
 function methodOne(swoole_process $worker){// 第一个处理
     // single curl request
+    $db = new DB();
+    $urls = $db->select('web_url', ['url'], []);
+    $urls = array_column($urls, 'url');
+
     $rc = new RollingCurl("request_callback");
-    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->window_size = 20;
+    foreach ($urls as $url) {
+        $request = new RollingCurlRequest($url);
+        $rc->add($request);
+    }
     $rc->execute();
+
+    /*$rc = new RollingCurl("request_callback");
+    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->execute();*/
 }
 
 function methodTwo(swoole_process $worker){// 第二个处理
-    // single curl request
+    $db = new DB();
+    $urls = $db->select('web_url', ['url'], []);
+    $urls = array_column($urls, 'url');
+    $urls = array_reverse($urls);
+
     $rc = new RollingCurl("request_callback");
-    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->window_size = 20;
+    foreach ($urls as $url) {
+        $request = new RollingCurlRequest($url);
+        $rc->add($request);
+    }
     $rc->execute();
 }
 
 function methodThree(swoole_process $worker){// 第三个处理
-    // single curl request
+    $db = new DB();
+    $urls = $db->select('web_url', ['url'], []);
+    $urls = array_column($urls, 'url');
+    $urls = array_slice($urls, 60);
+
     $rc = new RollingCurl("request_callback");
-    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->window_size = 20;
+    foreach ($urls as $url) {
+        $request = new RollingCurlRequest($url);
+        $rc->add($request);
+    }
     $rc->execute();
 }
 

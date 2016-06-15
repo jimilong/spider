@@ -11,6 +11,10 @@ $Id$
 require("RollingCurl.php");
 require("DB.php");
 
+$urls = [1,2,3,4,5];
+$urls = shuffle($urls);
+print_r($urls);exit;
+
 // a little example that fetches a bunch of sites in parallel and echos the page title and response info for each request
 function request_callback($response, $info, $request) {
 	// parse the page title out of the returned HTML
@@ -18,7 +22,7 @@ function request_callback($response, $info, $request) {
 	$db = new DB();
 	$data = $db->select('web_url', ['url'], []);
 	$data = array_column($data, 'url');
-	print_r($data);exit;
+
 	if ($out[1]) {
 		$data = array_unique($out[1]);
 		foreach ($data as $k => $v) {
