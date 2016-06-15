@@ -1,4 +1,8 @@
 <?php
+
+require("RollingCurl.php");
+require("DB.php");
+
 $funcMap=array('methodOne' , 'methodTwo' ,'methodThree' );
 $worker_num =3;//创建的进程数
 
@@ -6,22 +10,44 @@ for($i=0;$i<$worker_num ; $i++){
     $process = new swoole_process($funcMap[$i]);
     //$process->daemon('true', 'true');
     $pid = $process->start();
-    sleep(2);
+    //sleep(2);
+}
+
+function request_callback($response, $info, $request) {
+    // parse the page title out of the returned HTML
+    preg_match_all('~(http://www.lagou.com/gongsi/\w.+)"\s~Us', $response, $out);
+    $db = new DB();
+    $check = $db->select('web_url', ['url'], []);
+    $check = array_column($check, 'url');
+    $out[1] = array_diff($out[1], $check);
+    if ($out[1]) {
+        $data = array_unique($out[1]);
+        foreach ($data as $k => $v) {
+            $db->insert('web_url', ['url' => $v, 'create_time' => time()]);
+        }
+    }
+    echo 'ok!';
 }
 
 function methodOne(swoole_process $worker){// 第一个处理
-    for($i=0;$i<100000000;$i++){}
-    echo $worker->callback .PHP_EOL;
+    // single curl request
+    $rc = new RollingCurl("request_callback");
+    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->execute();
 }
 
 function methodTwo(swoole_process $worker){// 第二个处理
-    for($i=0;$i<100000000;$i++){}
-    echo $worker->callback .PHP_EOL;
+    // single curl request
+    $rc = new RollingCurl("request_callback");
+    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->execute();
 }
 
 function methodThree(swoole_process $worker){// 第三个处理
-    for($i=0;$i<100000000;$i++){}
-    echo $worker->callback .PHP_EOL;
+    // single curl request
+    $rc = new RollingCurl("request_callback");
+    $rc->request("http://www.lagou.com/gongsi/");
+    $rc->execute();
 }
 
 while(1){

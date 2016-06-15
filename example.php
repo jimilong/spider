@@ -9,52 +9,46 @@ $Id$
 */
 
 require("RollingCurl.php");
+require("DB.php");
 
 // a little example that fetches a bunch of sites in parallel and echos the page title and response info for each request
 function request_callback($response, $info, $request) {
 	// parse the page title out of the returned HTML
-	if (preg_match("~<title>(.*?)</title>~i", $response, $out)) {
-		$title = $out[1];
+	preg_match_all('~(http://www.lagou.com/gongsi/\w.+)"\s~Us', $response, $out);
+	$db = new DB();
+	$data = $db->select('web_url', ['url'], []);
+	$data = array_column($data, 'url');
+	print_r($data);exit;
+	if ($out[1]) {
+		$data = array_unique($out[1]);
+		foreach ($data as $k => $v) {
+			$db->insert('web_url', ['url' => $v, 'create_time' => time()]);
+		}
 	}
-	echo "<b>$title</b><br />";
-	print_r($info);
+	echo 'ok!';
+	//print_r($out[1]);
+	/*print_r($info);
     print_r($request);
-	echo "<hr>";
+	echo "<hr>";*/
 }
 
 // single curl request
 $rc = new RollingCurl("request_callback");
-$rc->request("http://www.msn.com");
+$rc->request("http://www.lagou.com/gongsi/");
 $rc->execute();
-
-// another single curl request
+exit;
+/*// another single curl request
 $rc = new RollingCurl("request_callback");
 $rc->request("http://www.google.com");
 $rc->execute();
 
-echo "<hr>";
+echo "<hr>";exit;*/
 
 // top 20 sites according to alexa (11/5/09)
-$urls = array("http://www.google.com",
-              "http://www.facebook.com",
-              "http://www.yahoo.com",
-              "http://www.youtube.com",
-              "http://www.live.com",
-              "http://www.wikipedia.com",
-              "http://www.blogger.com",
-              "http://www.msn.com",
-              "http://www.baidu.com",
-              "http://www.yahoo.co.jp",
-              "http://www.myspace.com",
-              "http://www.qq.com",
-              "http://www.google.co.in",
-              "http://www.twitter.com",
-              "http://www.google.de",
-              "http://www.microsoft.com",
-              "http://www.google.cn",
-              "http://www.sina.com.cn",
-              "http://www.wordpress.com",
-              "http://www.google.co.uk");
+$urls = [
+	"http://www.chbot.cn",
+	"http://www.lagou.com/zhaopin/PHP/"
+];
 
 $rc = new RollingCurl("request_callback");
 $rc->window_size = 20;

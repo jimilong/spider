@@ -36,20 +36,40 @@ class DB {
     }
 
     public function select($table, $data, $condition) {
-        if (null == $table || null == $data || null == $condition) {
+        if (null == $table || null == $data) {
             return false;
         }
-        $sql = "SELECT ".implode(',', $data)." FROM ".$table." WHERE ".implode(' AND ', $condition);
+        $sql = "SELECT ".implode(',', $data)." FROM ".$table;
+        if ($condition) {
+            $sql .= " WHERE ".implode(' AND ', $condition);
+        }
+
         $statement = $this->pdo->query($sql);
 
-        return $statement->fetchAll();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function insert($table, $data) {
         if (null == $table || null == $data) {
             return false;
         }
-        $sql = "INSERT INTO ".$table." (".implode(',', array_keys($data)).") "."VALUES "." (".implode(',', array_values($data)).")";
+        $sql = "INSERT INTO `$table` SET ";
+        $content = null;
+
+        foreach ($data as $k => $v)
+        {
+            $v_str = null;
+            if ( is_numeric($v) )
+                $v_str = "'{$v}'";
+            else if ( is_null($v) )
+                $v_str = 'NULL';
+            else
+                $v_str = "'" . $v . "'";
+
+            $content .= "`$k`=$v_str,";
+        }
+
+        $sql .= trim($content, ',');
 
         return $this->pdo->exec($sql);
 
