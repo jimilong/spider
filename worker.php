@@ -5,14 +5,6 @@ ini_set('display_errors', 1);
 /**
  * Worker多进程操作类
  *
- * Licensed under The MIT License
- * For full copyright and license information, please see the MIT-LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @author seatle<seatle@foxmail.com>
- * @copyright seatle<seatle@foxmail.com>
- * @link http://www.epooll.com/
- * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
 class worker
